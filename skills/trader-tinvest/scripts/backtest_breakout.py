@@ -3,11 +3,17 @@
 
 Input: instrument={uid,kind:"share",currency,lot_size,price_tick,cash_tick};
 dataset={kind:"synthetic"|"historical_unverified",source,as_of,
-  corporate_actions:"none_declared",constant_lot_and_tick:true};
+  corporate_actions:"none_declared"|"cash_dividends",constant_lot_and_tick:true};
 config={initial_cash,entry_lookback,exit_lookback,max_hold_bars,
   commission_bps,half_spread_bps,slippage_bps,max_participation,
   settlement_lag_bars}; holdout_start = exact bar open_time string;
 bars=[{open_time,close_time,open,high,low,close,volume_lots,is_complete:true}].
+cash_dividends requires dividends=[{ex_date,payment_date,amount_per_unit,source}].
+Dates are YYYY-MM-DD trading dates, defined by the bar close_time's local date.
+Gross entitlement is booked BEFORE ex-day opening fills using prior holdings.
+It remains a receivable in equity until paid at CLOSE on/after payment_date;
+that cash cannot fund a fill until the next open. Events are explicit model
+assumptions, not verified corporate actions or post-tax broker accounting.
 Prices, cash, bps and fractions are plain decimal strings. Counts are positive
 JSON integers (volume can be zero). Times must include timezone. See the full
 research contract and limitations in ../references/backtest-breakout.md.
@@ -27,7 +33,7 @@ holdout independence remain UNVERIFIED; no profitability is established.
 No network, credentials, optimization, real orders or validator-ready outputs.
 """
 import argparse
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal, ROUND_CEILING, ROUND_FLOOR, localcontext
 import hashlib
 import json
@@ -76,6 +82,16 @@ def timestamp(value, name):
     return result
 
 
+def event_date(value, name):
+    value = text(value, name)
+    try:
+        result = date.fromisoformat(value)
+    except ValueError:
+        raise ValueError(name + " must be YYYY-MM-DD") from None
+    require(result.isoformat() == value, name + " must be YYYY-MM-DD")
+    return result
+
+
 def display(value):
     return format(value, "f")
 
@@ -101,7 +117,8 @@ def parse(payload):
     require(dataset.get("kind") in ("synthetic", "historical_unverified"), "unsupported dataset kind")
     text(dataset.get("source"), "dataset source")
     as_of = timestamp(dataset.get("as_of"), "dataset as_of")
-    require(dataset.get("corporate_actions") == "none_declared" and
+    corporate_actions = dataset.get("corporate_actions")
+    require(corporate_actions in ("none_declared", "cash_dividends") and
             dataset.get("constant_lot_and_tick") is True, "corporate actions or changing lot/tick are unsupported")
     cfg = {key: integer(config.get(key), key, maximum=1000) for key in
            ("entry_lookback", "exit_lookback", "max_hold_bars", "settlement_lag_bars")}
@@ -127,6 +144,27 @@ def parse(payload):
         require(all(value % tick == 0 for value in prices.values()), "bar prices do not match constant tick")
         volume = integer(record.get("volume_lots"), "volume_lots", minimum=0, maximum=2 ** 63 - 1)
         bars.append(dict(prices, open_time=start, close_time=end, volume_lots=volume))
+    raw_dividends = payload.get("dividends", [])
+    require(isinstance(raw_dividends, list), "dividends must be a list")
+    cfg["_dividends"] = []
+    if corporate_actions == "none_declared":
+        require(not raw_dividends, "dividends require cash_dividends mode")
+    else:
+        require(0 < len(raw_dividends) <= MAX_BARS, "cash_dividends requires bounded events")
+        trading_dates = [bar["close_time"].date() for bar in bars]
+        require(len(set(trading_dates)) == len(trading_dates), "dividend mode requires unique daily trading dates")
+        seen_ex_dates = set()
+        for event in raw_dividends:
+            event = obj(event, "dividend event")
+            ex_day = event_date(event.get("ex_date"), "ex_date")
+            payment_day = event_date(event.get("payment_date"), "payment_date")
+            require(ex_day in trading_dates, "ex_date must match a dataset trading date")
+            require(ex_day not in seen_ex_dates, "duplicate dividend ex_date")
+            require(payment_day >= ex_day, "payment_date precedes ex_date")
+            seen_ex_dates.add(ex_day)
+            cfg["_dividends"].append({"ex_date": ex_day, "payment_date": payment_day,
+                                      "amount_per_unit": number(event.get("amount_per_unit"), "amount_per_unit", positive=True),
+                                      "source": text(event.get("source"), "dividend source")})
     split_time = timestamp(payload.get("holdout_start"), "holdout_start")
     matches = [i for i, bar in enumerate(bars) if bar["open_time"] == split_time]
     require(len(matches) == 1, "holdout_start must match one bar open time")
@@ -142,6 +180,9 @@ def simulate(bars, start, end, cfg, lot, tick, cash_tick, buy_hold=False):
     pending = {"side": "BUY", "reason": "buy_once_hold", "signal_index": None} if buy_hold else None
     entry_index, episode = None, None
     commissions, shortfall, turnover = Decimal(0), Decimal(0), Decimal(0)
+    dividend_events = {event["ex_date"]: event for event in cfg.get("_dividends", [])}
+    dividend_receivables, dividend_log = [], []
+    dividend_accrued, dividend_received = Decimal(0), Decimal(0)
     peak, max_dd = cash, Decimal(0)
     fee_rate = cfg["commission_bps"] / 10000
     impact = (cfg["half_spread_bps"] + cfg["slippage_bps"]) / 10000
@@ -151,6 +192,19 @@ def simulate(bars, start, end, cfg, lot, tick, cash_tick, buy_hold=False):
 
     for i in range(start, end):
         bar = bars[i]
+        trading_day = bar["close_time"].date()
+        dividend = dividend_events.get(trading_day)
+        if dividend is not None:
+            units = lots * lot  # Prior holdings, before any ex-day opening BUY/SELL.
+            entitlement = units * dividend["amount_per_unit"]
+            if entitlement:
+                dividend_receivables.append((dividend["payment_date"], entitlement))
+                dividend_accrued += entitlement
+                episode["dividend_income"] += entitlement
+            dividend_log.append({"ex_date": trading_day.isoformat(),
+                                 "payment_date": dividend["payment_date"].isoformat(),
+                                 "units": units, "gross_entitlement": display(entitlement),
+                                 "source": dividend["source"]})
         cash += sum((amount for release, amount in unsettled if release <= i), Decimal(0))
         unsettled = [(release, amount) for release, amount in unsettled if release > i]
         if pending is not None:
@@ -178,16 +232,21 @@ def simulate(bars, start, end, cfg, lot, tick, cash_tick, buy_hold=False):
                     lots = quantity
                     entry_index = i
                     episode = {"entry_index": i, "entry_lots": quantity, "entry_cost": notional + commission,
-                               "net_proceeds": Decimal(0)}
+                               "net_proceeds": Decimal(0), "dividend_income": Decimal(0)}
                 else:
                     proceeds = notional - commission
                     unsettled.append((i + cfg["settlement_lag_bars"], proceeds))
                     lots -= quantity
                     episode["net_proceeds"] += proceeds
                     if lots == 0:
-                        closed.append({"entry_index": episode["entry_index"], "exit_index": i,
-                                       "lots": episode["entry_lots"],
-                                       "net_pnl": display(episode["net_proceeds"] - episode["entry_cost"])})
+                        trading_pnl = episode["net_proceeds"] - episode["entry_cost"]
+                        closed_episode = {"entry_index": episode["entry_index"], "exit_index": i,
+                                          "lots": episode["entry_lots"],
+                                          "net_pnl": display(trading_pnl + episode["dividend_income"])}
+                        if dividend_events:
+                            closed_episode.update(trading_pnl_before_dividends=display(trading_pnl),
+                                                  dividend_income=display(episode["dividend_income"]))
+                        closed.append(closed_episode)
                         entry_index, episode = None, None
                 commissions += commission
                 shortfall += abs(price - bar["open"]) * lot * quantity
@@ -201,13 +260,21 @@ def simulate(bars, start, end, cfg, lot, tick, cash_tick, buy_hold=False):
             if side == "BUY" or lots == 0:
                 pending = None
         require(cash >= 0 and lots >= 0, "internal cash/position invariant failed")
+        # Payment at close is unavailable to opening fills of this same bar.
+        paid = sum((amount for due, amount in dividend_receivables if due <= trading_day), Decimal(0))
+        cash += paid
+        dividend_received += paid
+        dividend_receivables = [(due, amount) for due, amount in dividend_receivables if due > trading_day]
+        receivable = sum((amount for _, amount in dividend_receivables), Decimal(0))
         unsettled_cash = sum((amount for _, amount in unsettled), Decimal(0))
         require(unsettled_cash >= 0, "internal unsettled cash invariant failed")
-        equity = cash + unsettled_cash + lots * lot * bar["close"]
+        equity = cash + unsettled_cash + receivable + lots * lot * bar["close"]
         peak = max(peak, equity)
         max_dd = max(max_dd, (peak - equity) / peak)
         curve.append({"bar_index": i, "close_time": bar["close_time"].isoformat(), "available_cash": display(cash),
                       "unsettled_proceeds": display(unsettled_cash), "position_lots": lots, "equity": display(equity)})
+        if dividend_events:
+            curve[-1].update(dividend_receivables=display(receivable), dividend_cash_received=display(dividend_received))
         if not buy_hold and pending is None:
             if lots:
                 exit_low = min(b["low"] for b in bars[i - cfg["exit_lookback"]:i])
@@ -220,7 +287,7 @@ def simulate(bars, start, end, cfg, lot, tick, cash_tick, buy_hold=False):
             if pending is not None:
                 signals.append(dict(pending))
     pnl = equity - cfg["initial_cash"]
-    return {"start_index": start, "end_index_exclusive": end,
+    result = {"start_index": start, "end_index_exclusive": end,
             "initial_cash": display(cfg["initial_cash"]), "final_equity": display(equity),
             "net_pnl_before_tax": display(pnl), "return_fraction": fraction(pnl / cfg["initial_cash"]),
             "gross_pnl_same_fills": display(pnl + commissions + shortfall),
@@ -229,6 +296,11 @@ def simulate(bars, start, end, cfg, lot, tick, cash_tick, buy_hold=False):
             "open_position_lots": lots, "unsettled_proceeds": display(unsettled_cash),
             "pending_signal": pending, "closed_episodes": closed, "fills": fills, "signals": signals,
             "skipped_fills": skips, "equity_curve": curve}
+    if dividend_events:
+        result.update(dividends_accrued_gross=display(dividend_accrued),
+                      dividends_cash_received_gross=display(dividend_received),
+                      dividend_receivables=display(receivable), dividend_events=dividend_log)
+    return result
 
 
 def run(payload):
@@ -237,7 +309,8 @@ def run(payload):
         with localcontext() as context:
             context.prec = 100
             instrument, dataset, cfg, bars, start, split, lot, tick, cash_tick = parse(payload)
-            params = {"strategy": STRATEGY, "instrument": payload["instrument"], "config": payload["config"],
+            strategy = "cash-share-breakout-dividends-v1" if cfg["_dividends"] else STRATEGY
+            params = {"strategy": strategy, "instrument": payload["instrument"], "config": payload["config"],
                       "holdout_start": payload["holdout_start"]}
             digest = lambda value: hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"),
                                                            allow_nan=False).encode("utf-8")).hexdigest()
@@ -247,15 +320,17 @@ def run(payload):
                 period["benchmarks"] = {"cash_final_equity": display(cfg["initial_cash"]),
                                         "buy_once_hold": simulate(bars, lo, hi, cfg, lot, tick, cash_tick, True)}
                 periods[name] = period
-            return {"status": "SIMULATED", "strategy": STRATEGY, "strategy_validated": False,
+            return {"status": "SIMULATED", "strategy": strategy, "strategy_validated": False,
                     "ready_for_validators": False, "holdout_independence_verified": False,
                     "data_kind": dataset["kind"], "source": dataset["source"], "currency": instrument["currency"],
                     "parameters_sha256": digest(params), "input_sha256": digest(payload),
                     "periods": periods,
-                    "limitations": ["single_share_constant_lot_tick_no_corporate_actions",
+                    "limitations": [("single_share_constant_lot_tick_cash_dividends_only" if cfg["_dividends"]
+                                     else "single_share_constant_lot_tick_no_corporate_actions"),
                                     "unverified_history_and_session_completeness", "approximate_next_open_fills",
                                     "previous_volume_is_not_available_opening_liquidity", "bar_based_settlement_assumption",
-                                    "no_taxes_dividends_or_interest", "no_live_guards_or_daily_loss_gate",
+                                    ("gross_dividend_dates_and_amounts_are_unverified_no_taxes_or_interest" if cfg["_dividends"]
+                                     else "no_taxes_dividends_or_interest"), "no_live_guards_or_daily_loss_gate",
                                     "no_forced_final_sale_or_proof_of_holdout_independence"]}
     except (ValueError, TypeError, KeyError, ArithmeticError, RecursionError):
         return {"status": "BLOCK", "strategy_validated": False, "ready_for_validators": False,

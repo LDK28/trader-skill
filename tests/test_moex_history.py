@@ -100,7 +100,49 @@ def captures(spec=None, candle_rows=None, trading_rows=None, page_size=None):
     return result
 
 
+def hourly_repair_fixture():
+    """A deliberately corrupt daily candle, two exact artificial hours and history."""
+    spec = study()
+    spec["hourly_repairs"] = ["2025-02-25"]
+    spec["historical_tick_assumption"] = "0.000000001"
+    candles, trading = source_rows()
+    candles[0].update(open=Decimal("20"), high=Decimal("21"), low=Decimal("19"),
+                      close=Decimal("20.5"), volume=200, value=Decimal("4100"))
+    hours = [
+        {"open": Decimal("10.123456789"), "high": Decimal("11.123456789"),
+         "low": Decimal("9.623456789"), "close": Decimal("10.623456789"),
+         "volume": 40, "value": Decimal("405.123456789"),
+         "begin": "2025-02-25 10:00:00", "end": "2025-02-25 10:59:59"},
+        {"open": Decimal("10.623456789"), "high": Decimal("10.723456789"),
+         "low": Decimal("10.123456789"), "close": Decimal("10.623456789"),
+         "volume": 60, "value": Decimal("637.222222111"),
+         "begin": "2025-02-25 11:00:00", "end": "2025-02-25 11:59:59"},
+    ]
+    trading[0].update(OPEN=Decimal("10.123456789"), HIGH=Decimal("11.123456789"),
+                      LOW=Decimal("9.623456789"), CLOSE=Decimal("10.623456789"),
+                      VOLUME=100, VALUE=Decimal("1042.345678900"))
+    pages = captures(spec, candles, trading)
+    series = "hourly:2025-02-25"
+    for offset, rows in ((0, hours), (2, [])):
+        raw = raw_table("candles", rows)
+        pages.append({"series": series, "url": history.source_url(spec, series, offset),
+                      "requested_at": "2025-03-10T10:00:00+00:00",
+                      "received_at": "2025-03-10T10:00:01+00:00", "raw": raw,
+                      "sha256": hashlib.sha256(raw.encode()).hexdigest()})
+    return spec, pages, hours
+
+
 class MoexHistoryTests(unittest.TestCase):
+    def test_declared_dividend_events_are_preserved_for_the_engine(self):
+        spec = study()
+        spec["corporate_actions"] = "cash_dividends"
+        spec["dividends"] = [{"ex_date": "2025-03-03", "payment_date": "2025-03-04",
+                              "amount_per_unit": "1", "source": "synthetic-event"}]
+        prepared = history.prepare(spec, captures(spec))
+        self.assertEqual(prepared["backtest_input"]["dataset"]["corporate_actions"], "cash_dividends")
+        self.assertEqual(prepared["backtest_input"]["dividends"], spec["dividends"])
+        self.assertEqual(prepared["backtest_input"]["dataset"]["kind"], "historical_unverified")
+
     def blocked(self, spec, pages):
         with self.assertRaises((ValueError, TypeError, KeyError, ArithmeticError)):
             history.prepare(spec, pages)
@@ -240,8 +282,93 @@ class MoexHistoryTests(unittest.TestCase):
             pages[0][field] = value
             self.blocked(study(), pages)
 
+    def test_explicit_hourly_repair_reconstructs_all_fields_exactly_and_remains_unverified(self):
+        spec, pages, _ = hourly_repair_fixture()
+        original = copy.deepcopy(pages)
+        with localcontext() as context:
+            context.prec = 5
+            result = history.prepare(spec, pages)
+        bar = result["backtest_input"]["bars"][0]
+        self.assertEqual({key: bar[key] for key in ("open", "high", "low", "close", "volume_lots")},
+                         {"open": "10.123456789", "high": "11.123456789", "low": "9.623456789",
+                          "close": "10.623456789", "volume_lots": 10})
+        self.assertEqual(bar["close_time"], "2025-02-25T11:59:59+03:00")
+        quality = result["data_quality"]
+        self.assertEqual(quality["source_repairs"], [{"date": "2025-02-25", "hourly_rows": 2,
+                         "changed_fields": ["open", "high", "low", "close", "volume", "value"]}])
+        self.assertEqual(quality["status"], "RECONSTRUCTED_UNVERIFIED")
+        self.assertEqual(quality["direct_matching_days"], 4)
+        self.assertIs(quality["ready_for_validators"], False)
+        self.assertEqual(result["backtest_input"]["dataset"]["kind"], "historical_unverified")
+        self.assertEqual(pages, original)
+        self.assertIn("interval=60", pages[-2]["url"])
+        self.assertIn("from=2025-02-25&till=2025-02-25", pages[-2]["url"])
+        self.assertIn("start=2", pages[-1]["url"])
+
+    def test_hourly_repair_requires_complete_captured_pages_with_matching_hashes(self):
+        for mode in ("missing_series", "missing_terminal", "empty_hours", "wrong_hash"):
+            with self.subTest(mode=mode):
+                spec, pages, _ = hourly_repair_fixture()
+                if mode == "missing_series":
+                    pages = pages[:-2]
+                elif mode == "missing_terminal":
+                    pages.pop()
+                elif mode == "empty_hours":
+                    pages = pages[:-2] + [dict(pages[-1], url=history.source_url(spec, "hourly:2025-02-25", 0))]
+                else:
+                    pages[-2]["sha256"] = "0" * 64
+                self.blocked(spec, pages)
+
+    def test_hourly_repair_rejects_wrong_dates_reversed_hours_and_overlapping_buckets(self):
+        for mode in ("wrong_date", "reverse", "overlap", "reversed_bucket"):
+            with self.subTest(mode=mode):
+                spec, pages, hours = hourly_repair_fixture()
+                if mode == "wrong_date":
+                    hours[0]["begin"] = "2025-02-24 10:00:00"
+                    hours[0]["end"] = "2025-02-24 10:59:59"
+                elif mode == "reverse":
+                    hours.reverse()
+                elif mode == "overlap":
+                    hours[1]["begin"] = hours[0]["end"]
+                else:
+                    hours[0]["begin"], hours[0]["end"] = hours[0]["end"], hours[0]["begin"]
+                raw = raw_table("candles", hours)
+                pages[-2].update(raw=raw, sha256=hashlib.sha256(raw.encode()).hexdigest())
+                self.blocked(spec, pages)
+
+    def test_corrupt_daily_candle_is_not_repaired_without_explicit_study_declaration(self):
+        spec, pages, _ = hourly_repair_fixture()
+        del spec["hourly_repairs"]
+        # Neither a bad daily row alone nor unsolicited hourly evidence authorizes replacement.
+        self.blocked(spec, pages[:-2])
+        self.blocked(spec, pages)
+
 
 class MoexHistoryCliTests(unittest.TestCase):
+    def test_hourly_replay_preserves_original_corrupt_raw_capture_without_http(self):
+        spec, pages, _ = hourly_repair_fixture()
+        original_raw = pages[0]["raw"]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            study_file, capture_file, output_dir = root / "study.json", root / "captures.json", root / "out"
+            study_file.write_text(json.dumps(spec), encoding="utf-8")
+            capture_file.write_text(json.dumps(pages), encoding="utf-8")
+            with patch.object(sys, "argv", ["moex_history.py", str(study_file), str(output_dir),
+                                           "--replay", str(capture_file)]), \
+                    patch.object(history, "urlopen", side_effect=AssertionError("HTTP forbidden")) as request, \
+                    patch("sys.stdout", new_callable=io.StringIO) as output:
+                result = history.main()
+            self.assertEqual(result, 0)
+            request.assert_not_called()
+            self.assertEqual(json.loads(output.getvalue())["status"], "PREPARED_UNVERIFIED")
+            saved = json.loads((output_dir / "source_captures.json").read_text())
+            quality = json.loads((output_dir / "data_quality.json").read_text())
+            self.assertEqual(saved, pages)
+            self.assertEqual(saved[0]["raw"], original_raw)
+            self.assertEqual(history.table(saved[0]["raw"], "candles")[0]["open"], Decimal("20"))
+            self.assertEqual(saved[0]["sha256"], hashlib.sha256(original_raw.encode()).hexdigest())
+            self.assertEqual(quality["status"], "RECONSTRUCTED_UNVERIFIED")
+
     def test_truncated_http_response_returns_block_without_traceback(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
