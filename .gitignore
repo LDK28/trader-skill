@@ -1,0 +1,19 @@
+# Credentials, personal preferences, and brokerage snapshots stay local.
+.local/
+.env
+.env.*
+**/policy.local.json
+config.toml
+mcp.json
+claude_desktop_config.json
+accounts.json
+portfolio*.json
+snapshot*.json
+*.log
+work/
+
+# Python and operating-system artifacts.
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store

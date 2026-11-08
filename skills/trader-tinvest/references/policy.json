@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "profile_kind": "example",
+  "requires_explicit_adoption": true,
+  "mode": "analysis_and_proposals_only",
+  "objective": "seek_positive_net_result_after_costs",
+  "profit_guaranteed": false,
+  "review_frequency": "daily",
+  "timezone": "Europe/Moscow",
+  "overnight_positions_allowed": true,
+  "universe": "all_account_available_instruments_for_analysis",
+  "budget": {
+    "basis": "verified_spendable_settled_own_cash_by_currency",
+    "use_all_available_own_cash": true,
+    "fixed_cash_reserve_fraction": "0",
+    "include_fees_nkd_and_mandatory_costs": true,
+    "allow_rounding_residual": true,
+    "use_borrowed_money": false,
+    "use_unsettled_or_expected_sale_proceeds": false,
+    "use_other_account_balances": false
+  },
+  "exposure": {
+    "margin_allowed": false,
+    "loans_allowed": false,
+    "short_sales_allowed": false,
+    "collateral_based_leverage_allowed": false,
+    "unknown_financing_eligibility": "block",
+    "cash_validator_supported_kinds": ["share", "bond", "fund", "spot_currency"],
+    "other_instruments": "analysis_only_until_bounded_cash_exposure_is_verified_and_validator_supported"
+  },
+  "daily_loss": {
+    "loss_limit_fraction": "0.50",
+    "reference": "day_start_equity_plus_verified_net_external_cashflow",
+    "include_realized_and_unrealized_pnl": true,
+    "comparison": "greater_than_or_equal",
+    "on_breach": "stop_new_proposals",
+    "missing_baseline_or_cashflow": "insufficient_data_stop_new_proposals",
+    "forced_liquidation": false
+  },
+  "strategy": {
+    "status": "not_selected_or_backtested",
+    "require_out_of_sample_evaluation": true,
+    "account_for_round_trip_commissions_spread_and_slippage": true,
+    "allow_no_trade_result": true,
+    "max_position_fraction": null
+  },
+  "execution": {
+    "enabled": false,
+    "submit_modify_cancel_or_transfer": false
+  },
+  "schedule": {
+    "created": false,
+    "time": null
+  }
+}
