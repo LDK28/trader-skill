@@ -1,0 +1,171 @@
+{
+  "instrument": {
+    "uid": "synthetic-share",
+    "kind": "share",
+    "currency": "rub",
+    "lot_size": 10,
+    "price_tick": "0.01",
+    "cash_tick": "0.01"
+  },
+  "dataset": {
+    "kind": "synthetic",
+    "source": "artificial-example-not-market-data",
+    "as_of": "2026-01-15T23:00:00Z",
+    "corporate_actions": "none_declared",
+    "constant_lot_and_tick": true
+  },
+  "config": {
+    "initial_cash": "10000",
+    "entry_lookback": 3,
+    "exit_lookback": 2,
+    "max_hold_bars": 3,
+    "commission_bps": "5",
+    "half_spread_bps": "5",
+    "slippage_bps": "5",
+    "max_participation": "0.1",
+    "settlement_lag_bars": 1
+  },
+  "holdout_start": "2026-01-08T07:00:00+00:00",
+  "bars": [
+    {
+      "open_time": "2026-01-01T07:00:00+00:00",
+      "close_time": "2026-01-01T15:00:00+00:00",
+      "open": "10",
+      "high": "11",
+      "low": "9",
+      "close": "10",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-02T07:00:00+00:00",
+      "close_time": "2026-01-02T15:00:00+00:00",
+      "open": "11",
+      "high": "12",
+      "low": "10",
+      "close": "11",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-03T07:00:00+00:00",
+      "close_time": "2026-01-03T15:00:00+00:00",
+      "open": "12",
+      "high": "13",
+      "low": "11",
+      "close": "12",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-04T07:00:00+00:00",
+      "close_time": "2026-01-04T15:00:00+00:00",
+      "open": "14",
+      "high": "15",
+      "low": "13",
+      "close": "14",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-05T07:00:00+00:00",
+      "close_time": "2026-01-05T15:00:00+00:00",
+      "open": "15",
+      "high": "16",
+      "low": "14",
+      "close": "15",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-06T07:00:00+00:00",
+      "close_time": "2026-01-06T15:00:00+00:00",
+      "open": "9",
+      "high": "10",
+      "low": "8",
+      "close": "9",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-07T07:00:00+00:00",
+      "close_time": "2026-01-07T15:00:00+00:00",
+      "open": "10",
+      "high": "11",
+      "low": "9",
+      "close": "10",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-08T07:00:00+00:00",
+      "close_time": "2026-01-08T15:00:00+00:00",
+      "open": "11",
+      "high": "12",
+      "low": "10",
+      "close": "11",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-09T07:00:00+00:00",
+      "close_time": "2026-01-09T15:00:00+00:00",
+      "open": "13",
+      "high": "14",
+      "low": "12",
+      "close": "13",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-10T07:00:00+00:00",
+      "close_time": "2026-01-10T15:00:00+00:00",
+      "open": "15",
+      "high": "16",
+      "low": "14",
+      "close": "15",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-11T07:00:00+00:00",
+      "close_time": "2026-01-11T15:00:00+00:00",
+      "open": "8",
+      "high": "9",
+      "low": "7",
+      "close": "8",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-12T07:00:00+00:00",
+      "close_time": "2026-01-12T15:00:00+00:00",
+      "open": "9",
+      "high": "10",
+      "low": "8",
+      "close": "9",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-13T07:00:00+00:00",
+      "close_time": "2026-01-13T15:00:00+00:00",
+      "open": "11",
+      "high": "12",
+      "low": "10",
+      "close": "11",
+      "volume_lots": 1000,
+      "is_complete": true
+    },
+    {
+      "open_time": "2026-01-14T07:00:00+00:00",
+      "close_time": "2026-01-14T15:00:00+00:00",
+      "open": "13",
+      "high": "14",
+      "low": "12",
+      "close": "13",
+      "volume_lots": 1000,
+      "is_complete": true
+    }
+  ]
+}
