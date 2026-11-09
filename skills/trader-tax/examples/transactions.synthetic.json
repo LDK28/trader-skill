@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "data_kind": "synthetic",
+  "ledger_scope_id": "example-only-account",
+  "tax_year": 2026,
+  "accounting_currency": "RUB",
+  "basis_method": "FIFO",
+  "history_complete": true,
+  "transactions": [
+    {"id": "buy-a", "occurred_at": "2025-12-01T10:00:00+03:00", "tax_date": "2025-12-01", "kind": "BUY", "instrument_uid": "synthetic-share", "tax_basket": "example_organized_securities", "quantity": "10", "gross_amount": "1000", "fees": "10", "currency": "RUB", "source_ref": "SYNTHETIC purchase A"},
+    {"id": "buy-b", "occurred_at": "2026-01-05T10:00:00+03:00", "tax_date": "2026-01-05", "kind": "BUY", "instrument_uid": "synthetic-share", "tax_basket": "example_organized_securities", "quantity": "5", "gross_amount": "750", "fees": "5", "currency": "RUB", "source_ref": "SYNTHETIC purchase B"},
+    {"id": "sell-a", "occurred_at": "2026-02-01T10:00:00+03:00", "tax_date": "2026-02-01", "kind": "SELL", "instrument_uid": "synthetic-share", "tax_basket": "example_organized_securities", "quantity": "12", "gross_amount": "1800", "fees": "12", "currency": "RUB", "source_ref": "SYNTHETIC actual sale"},
+    {"id": "dividend-a", "occurred_at": "2026-03-01T10:00:00+03:00", "tax_date": "2026-03-01", "kind": "DIVIDEND", "instrument_uid": "synthetic-share", "tax_basket": "example_dividends", "gross_amount": "50", "fees": "0", "currency": "RUB", "source_ref": "SYNTHETIC income event; tax treatment unassigned"}
+  ]
+}

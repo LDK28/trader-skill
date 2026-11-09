@@ -1,0 +1,8 @@
+{
+  "as_of": "2026-11-09T10:00:00Z",
+  "max_quote_age_seconds": 900,
+  "rules": [{"id": "synthetic-target", "uid": "demo-share", "class_code": "TQBR", "currency": "rub", "type": "above", "price": "100", "rearm": true, "cooldown_seconds": 60}, {"id": "synthetic-session", "type": "opening_bell", "exchange": "DEMO"}],
+  "quotes": [{"uid": "demo-share", "class_code": "TQBR", "currency": "rub", "price": "99", "as_of": "2026-11-09T09:59:00Z"}, {"uid": "demo-share", "class_code": "TQBR", "currency": "rub", "price": "101", "as_of": "2026-11-09T10:00:00Z"}],
+  "exchange_schedules": {"DEMO": {"coverage_start": "2026-11-09T00:00:00Z", "coverage_end": "2026-11-10T00:00:00Z", "intervals": [{"id": "synthetic-session-1", "start": "2026-11-09T07:00:00Z", "end": "2026-11-09T15:50:00Z"}]}},
+  "state": {}
+}

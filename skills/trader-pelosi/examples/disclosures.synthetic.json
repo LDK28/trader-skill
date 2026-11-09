@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "mode": "ru_public_issuer",
+  "data_kind": "synthetic",
+  "captured_at": "2026-11-09T12:00:00+03:00",
+  "source_id": "synthetic-public-index",
+  "source_index_url": "https://example.com/synthetic-disclosures",
+  "events": [
+    {
+      "id": "synthetic:issuer-event-1",
+      "source_url": "https://example.com/synthetic-disclosures/event-1",
+      "issuer": {"id": "synthetic-issuer", "name": "Учебный эмитент, вымышленный"},
+      "published_at": "2026-11-08T10:00:00+03:00",
+      "event_date": "2026-11-06",
+      "event_type": "ownership_disclosure",
+      "title": "Искусственное уведомление об изменении доли; не свидетельство сделки",
+      "public": true,
+      "persons": [{"name": "Вымышленный участник примера", "role": "публично названный владелец в синтетическом документе"}],
+      "documents": [{"id": "synthetic-doc-1", "source_url": "https://example.com/synthetic-disclosures/document-1"}],
+      "amount_range": {"currency": "RUB", "lower": "1000000", "upper": "2000000"},
+      "details": {"holding_before_percent": "4.0", "holding_after_percent": "5.1", "note": "Все сведения искусственные; диапазон не превращается в цену сделки"}
+    },
+    {
+      "id": "synthetic:issuer-event-2",
+      "source_url": "https://example.com/synthetic-disclosures/event-2",
+      "issuer": {"id": "synthetic-issuer", "name": "Учебный эмитент, вымышленный"},
+      "published_at": "2026-11-09T09:00:00+03:00",
+      "event_date": null,
+      "event_type": "issuer_notice",
+      "title": "Искусственное сообщение с неизвестной датой события",
+      "public": true,
+      "persons": [],
+      "documents": [],
+      "amount_range": null,
+      "details": {"note": "Дата события не придумана"}
+    }
+  ]
+}

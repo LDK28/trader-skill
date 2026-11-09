@@ -1,0 +1,8 @@
+{
+  "name": "trader-skill-ru",
+  "version": "0.2.0",
+  "description": "Русскоязычный пакет навыков анализа и офлайн-расчётов Т-Инвестиций для ChatGPT и Codex.",
+  "author": {"name": "LDK28"},
+  "repository": "https://github.com/LDK28/trader-skill",
+  "skills": "./skills/"
+}

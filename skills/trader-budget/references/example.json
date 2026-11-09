@@ -1,0 +1,55 @@
+{
+  "account_id": "synthetic-account",
+  "currency": "rub",
+  "as_of": "2026-10-01T10:00:00+03:00",
+  "own_cash": "10000",
+  "targets": [
+    {
+      "uid": "synthetic-A",
+      "weight": "0.6"
+    },
+    {
+      "uid": "synthetic-B",
+      "weight": "0.4"
+    }
+  ],
+  "instruments": [
+    {
+      "uid": "synthetic-A",
+      "class_code": "SYNTH",
+      "currency": "rub",
+      "kind": "share",
+      "leveraged": false,
+      "financing": "fully_paid_cash",
+      "lot_size": 10,
+      "cost_source": "synthetic fixture, not a quotation",
+      "principal_per_lot": "1000",
+      "fee_per_lot": "1",
+      "nkd_per_lot": "0",
+      "other_per_lot": "0",
+      "fixed_fee": "0"
+    },
+    {
+      "uid": "synthetic-B",
+      "class_code": "SYNTH",
+      "currency": "rub",
+      "kind": "share",
+      "leveraged": false,
+      "financing": "fully_paid_cash",
+      "lot_size": 1,
+      "cost_source": "synthetic fixture, not a quotation",
+      "principal_per_lot": "500",
+      "fee_per_lot": "1",
+      "nkd_per_lot": "0",
+      "other_per_lot": "0",
+      "fixed_fee": "0"
+    }
+  ],
+  "rules": {
+    "cash_buffer_fraction": "0",
+    "max_position_fraction": "0.7",
+    "min_order": "100",
+    "max_order": "7000",
+    "blocked_uids": []
+  }
+}

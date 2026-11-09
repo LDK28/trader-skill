@@ -1,0 +1,7 @@
+{
+  "as_of": "2026-11-09T12:00:00Z",
+  "companies": [{"uid": "demo-share", "class_code": "TQBR", "ticker": "DEMO", "name": "Искусственный эмитент", "reports": [
+    {"standard": "IFRS", "scope": "consolidated", "currency": "rub", "period_type": "half_year", "flow_basis": "year_to_date", "period_start": "2025-01-01", "period_end": "2025-06-30", "published_at": "2025-08-01T09:00:00Z", "source_url": "https://example.invalid/reports/2025h1", "metrics": {"revenue": {"value": "100", "unit": "money", "currency": "rub"}, "net_income": {"value": "20", "unit": "money", "currency": "rub"}, "eps_diluted": {"value": "2", "unit": "money_per_share", "currency": "rub"}}},
+    {"standard": "IFRS", "scope": "consolidated", "currency": "rub", "period_type": "half_year", "flow_basis": "year_to_date", "period_start": "2026-01-01", "period_end": "2026-06-30", "published_at": "2026-08-01T09:00:00Z", "source_url": "https://example.invalid/reports/2026h1", "metrics": {"revenue": {"value": "120", "unit": "money", "currency": "rub"}, "net_income": {"value": "30", "unit": "money", "currency": "rub"}, "eps_diluted": {"value": "3", "unit": "money_per_share", "currency": "rub"}}}
+  ]}]
+}

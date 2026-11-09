@@ -1,0 +1,8 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "trader-skill-ru",
+  "version": "0.2.0",
+  "description": "Русскоязычные офлайн-навыки анализа и расчётных планов для ChatGPT/Codex и Т-Инвестиций. Без подключения счёта и исполнения сделок.",
+  "author": {"name": "LDK28"},
+  "repository": "https://github.com/LDK28/trader-skill"
+}

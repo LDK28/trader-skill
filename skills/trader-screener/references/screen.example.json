@@ -1,0 +1,5 @@
+{
+  "as_of": "2026-11-09T12:00:00Z",
+  "companies": [{"uid": "demo-share", "class_code": "TQBR", "ticker": "DEMO", "as_of": "2026-11-09T11:00:00Z", "published_at": "2026-08-01T09:00:00Z", "standard": "IFRS", "scope": "consolidated", "period_type": "half_year", "metrics": {"net_margin": {"value": "25", "unit": "percent"}, "revenue_growth_yoy": {"value": "20", "unit": "percent"}}, "availability": {"uid": "demo-share", "class_code": "TQBR", "as_of": "2026-11-09T11:00:00Z", "api_trade_available": true, "account_available": true, "cash_eligible": true}}],
+  "spec": {"basis": {"standard": "IFRS", "scope": "consolidated", "period_type": "half_year"}, "rules": [{"metric": "net_margin", "unit": "percent", "op": ">=", "value": "10"}], "rank": [{"metric": "revenue_growth_yoy", "unit": "percent", "order": "desc", "weight": "1"}], "missing": "fail", "top": 5}
+}

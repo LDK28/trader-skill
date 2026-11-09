@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "account_id": "demo-account",
+  "execution_enabled": false,
+  "data_origin": "synthetic_fixture",
+  "daily_risk": {
+    "account_id": "demo-account",
+    "currency": "rub",
+    "loss_limit_fraction": "0.50",
+    "baseline": {
+      "account_id": "demo-account",
+      "currency": "rub",
+      "day": "2026-01-12",
+      "immutable": true,
+      "day_start_equity": "10000"
+    },
+    "snapshot": {
+      "account_id": "demo-account",
+      "currency": "rub",
+      "day": "2026-01-12",
+      "current_equity": "10000",
+      "net_external_cashflow": "0",
+      "cashflow_verified": true,
+      "as_of": "2026-01-12T06:59:59+00:00",
+      "expires_at": "2026-01-12T07:00:20+00:00"
+    }
+  },
+  "buy_plan": {
+    "account_id": "demo-account",
+    "snapshot": {
+      "as_of": "2026-01-12T06:59:59+00:00",
+      "expires_at": "2026-01-12T07:00:20+00:00",
+      "account_id": "demo-account",
+      "verified": true,
+      "no_existing_debt": true,
+      "cash_excludes_blocked_unsettled_borrowed": true,
+      "spendable_own_cash": {
+        "rub": "10000"
+      }
+    },
+    "orders": [
+      {
+        "client_id": "demo-buy-1",
+        "account_id": "demo-account",
+        "side": "BUY",
+        "order_type": "LIMIT",
+        "lots": 1,
+        "own_funds_max_lots": 9,
+        "limit_price": "100",
+        "price_unit": "settlement_currency",
+        "currency": "rub",
+        "instrument": {
+          "uid": "demo-uid-A",
+          "ticker": "DEMO",
+          "class_code": "TQBR",
+          "kind": "share",
+          "lot_size": 10,
+          "price_step": "0.01",
+          "identity_verified": true,
+          "available": true,
+          "eligibility_verified": true,
+          "financing": "fully_paid_cash",
+          "leveraged": false
+        },
+        "quote": {
+          "as_of": "2026-01-12T06:59:59+00:00",
+          "expires_at": "2026-01-12T07:00:20+00:00",
+          "instrument_uid": "demo-uid-A"
+        },
+        "estimate": {
+          "as_of": "2026-01-12T06:59:59+00:00",
+          "expires_at": "2026-01-12T07:00:20+00:00",
+          "verified_for_this_order": true,
+          "all_costs_included": true,
+          "at_limit_price": true,
+          "currency": "rub",
+          "principal": "1000",
+          "fees": "1",
+          "nkd": "0",
+          "other": "0",
+          "worst_case_total": "1001",
+          "binding": {
+            "account_id": "demo-account",
+            "instrument_uid": "demo-uid-A",
+            "lots": 1,
+            "limit_price": "100",
+            "side": "BUY"
+          }
+        },
+        "own_funds_limit": {
+          "as_of": "2026-01-12T06:59:59+00:00",
+          "expires_at": "2026-01-12T07:00:20+00:00",
+          "account_id": "demo-account",
+          "instrument_uid": "demo-uid-A",
+          "limit_price": "100",
+          "source": "buy_limits",
+          "verified": true,
+          "max_lots": 9
+        }
+      }
+    ]
+  }
+}

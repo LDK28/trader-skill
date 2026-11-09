@@ -1,0 +1,8 @@
+{
+  "as_of": "2026-11-09T12:00:00Z",
+  "hours": 24,
+  "watchlist": [{"uid": "demo-share", "class_code": "TQBR", "ticker": "DEMO"}],
+  "mcp_news": {"hasNext": false, "items": [{"id": "synthetic-news-1", "title": "Демонстрационный эмитент опубликовал отчёт", "source": "Искусственный источник", "ts": "2026-11-09T11:00:00Z", "summary": "Синтетические данные для проверки программы.", "instrumentId": [{"instrument": {"instrumentUid": "demo-share", "classCode": "TQBR", "ticker": "DEMO"}}]}]},
+  "feeds": [{"source": "Искусственный RSS", "xml": "<rss><channel><item><guid>demo-rss-1</guid><title>Демонстрационный дивиденд</title><link>https://example.invalid/news/1</link><pubDate>Mon, 09 Nov 2026 10:00:00 +0000</pubDate></item></channel></rss>", "instruments": [{"uid": "demo-share", "class_code": "TQBR"}]}],
+  "state": {}
+}

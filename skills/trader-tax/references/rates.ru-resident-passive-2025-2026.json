@@ -1,0 +1,16 @@
+{
+  "profile_id": "ru-resident-passive-2025-2026-reference-v1",
+  "profile_kind": "reference_not_personal_adoption",
+  "source_url": "https://www.nalog.gov.ru/rn20/taxation/taxes/ndfl/",
+  "source_checked_on": "2026-11-09",
+  "supported_tax_years": [2025, 2026],
+  "residency": "ru_tax_resident",
+  "scope": "verified_aggregate_passive_base",
+  "brackets": [
+    {"up_to_rub": "2400000", "rate": "0.13"},
+    {"up_to_rub": null, "rate": "0.15"}
+  ],
+  "requires_explicit_verified_personal_policy": true,
+  "automatically_derive_taxable_base_from_ledger": false,
+  "full_tax_engine": false
+}

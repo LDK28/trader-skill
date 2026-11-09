@@ -1,0 +1,73 @@
+{
+  "current": {
+    "entity": "Искусственный фонд — не реальное раскрытие",
+    "source_kind": "synthetic_fixture",
+    "source_url": "https://example.invalid/synthetic-fund/2026-09-30",
+    "as_of": "2026-09-30",
+    "published_at": "2026-10-01T10:00:00+03:00",
+    "currency": "rub",
+    "complete": true,
+    "quantity_basis": "same split-adjusted units through 2026-09-30",
+    "coverage_scope": "all synthetic securities",
+    "holdings": [
+      {
+        "isin": "RU000SYNTH01",
+        "name": "Искусственная бумага A",
+        "units": "60",
+        "value": "6000"
+      },
+      {
+        "isin": "RU000SYNTH02",
+        "name": "Искусственная бумага B",
+        "units": "40",
+        "value": "4000"
+      }
+    ]
+  },
+  "prior": {
+    "entity": "Искусственный фонд — не реальное раскрытие",
+    "source_kind": "synthetic_fixture",
+    "source_url": "https://example.invalid/synthetic-fund/2026-06-30",
+    "as_of": "2026-06-30",
+    "published_at": "2026-07-01T10:00:00+03:00",
+    "currency": "rub",
+    "complete": true,
+    "quantity_basis": "same split-adjusted units through 2026-09-30",
+    "coverage_scope": "all synthetic securities",
+    "holdings": [
+      {
+        "isin": "RU000SYNTH01",
+        "name": "Искусственная бумага A",
+        "units": "50",
+        "value": "5000"
+      },
+      {
+        "isin": "RU000SYNTH02",
+        "name": "Искусственная бумага B",
+        "units": "50",
+        "value": "5000"
+      }
+    ]
+  },
+  "mapping": [
+    {
+      "isin": "RU000SYNTH01",
+      "uid": "synthetic-A",
+      "class_code": "SYNTH",
+      "currency": "rub",
+      "lot_size": 10,
+      "source": "synthetic mapping, not broker metadata"
+    },
+    {
+      "isin": "RU000SYNTH02",
+      "uid": "synthetic-B",
+      "class_code": "SYNTH",
+      "currency": "rub",
+      "lot_size": 1,
+      "source": "synthetic mapping, not broker metadata"
+    }
+  ],
+  "top_n": 2,
+  "min_weight_fraction": "0",
+  "exclude_isins": []
+}
